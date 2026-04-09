@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BPS Tabalong - Survei Harga</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #splash-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: #0066b2; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; z-index: 9999;
+            transition: opacity 0.8s ease;
+        }
+        .loader {
+            border: 4px solid #f3f3f3; border-top: 4px solid #ffc107;
+            border-radius: 50%; width: 30px; height: 30px;
+            animation: spin 1s linear infinite; margin-top: 20px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+    <div id="splash-screen">
+        <img src="https://www.bps.go.id/_next/image?url=%2Fassets%2Flogo-bps.png&w=1080&q=75" alt="Logo BPS" class="w-32 h-auto mb-4 animate-pulse">
+        <h2 class="text-white font-bold tracking-widest text-sm text-center">BPS KAB. TABALONG<br><span class="text-yellow-300">SURVEI HARGA</span></h2>
+        <div class="loader"></div>
+    </div>
+
+    <div class="bg-[#0066b2] text-white p-4 shadow-lg flex items-center justify-center space-x-4 border-b-4 border-[#ffc107]">
+        <img src="https://www.bps.go.id/_next/image?url=%2Fassets%2Flogo-bps.png&w=1080&q=75" alt="Logo BPS" class="h-10 w-auto">
+        <div class="text-left">
+            <h1 class="text-lg font-bold leading-tight uppercase tracking-tight">Survei Harga</h1>
+            <p class="text-[10px] font-bold tracking-widest uppercase text-yellow-300">BPS Kab. Tabalong</p>
+        </div>
+    </div>
+
+    <div class="p-4 max-md mx-auto mb-10">
+        <div class="space-y-4 bg-white p-5 rounded-3xl shadow-md border border-gray-200">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block font-black mb-1 text-[10px] uppercase text-gray-500">Petugas :</label>
+                    <select id="petugas" onchange="updateKegiatan()" class="w-full p-3 border-2 border-gray-100 rounded-xl bg-white outline-none text-[11px] font-bold">
+                        <option value="">-- Pilih --</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-black mb-1 text-[10px] uppercase text-gray-500">Kegiatan :</label>
+                    <select id="kegiatan" class="w-full p-3 border-2 border-gray-100 rounded-xl bg-white outline-none text-[11px] font-bold">
+                        <option value="">-- Pilih Petugas --</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block font-black mb-1 text-[10px] uppercase text-gray-500">Responden :</label>
+                <select id="responden" onchange="updateKomoditas()" class="w-full p-3 border-2 border-gray-100 rounded-xl bg-white outline-none text-[11px] font-bold">
+                    <option value="">-- Pilih Responden --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-black mb-1 text-[10px] uppercase text-blue-700">Komoditas :</label>
+                <select id="komoditas" onchange="updateKualitas()" class="w-full p-3 border-2 border-blue-50 rounded-xl bg-blue-50 outline-none text-[11px] font-bold">
+                    <option value="">-- Pilih Responden --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-black mb-1 text-[10px] uppercase text-blue-700">Kualitas :</label>
+                <select id="kualitas" class="w-full p-3 border-2 border-blue-50 rounded-xl bg-blue-50 outline-none text-[11px] font-bold">
+                    <option value="">-- Pilih Komoditas --</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-black mb-1 text-[10px] uppercase text-green-700">Produsen :</label>
+                <input type="text" id="produsen" class="w-full p-3 border-2 border-green-50 rounded-xl outline-none text-sm bg-green-50" placeholder="Ketik Nama Produsen">
+            </div>
+
+            <div id="preview-container" class="w-full h-48 bg-gray-50 rounded-2xl flex items-center justify-center border-2 border-dashed border-gray-300 overflow-hidden relative shadow-inner">
+                <img id="image-preview" class="hidden w-full h-full object-cover">
+                <span id="placeholder-text" class="text-gray-400 text-[10px] font-bold">AMBIL FOTO SURVEI</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="document.getElementById('camera-input').click()" class="bg-[#0066b2] text-white font-bold py-3 rounded-xl text-xs shadow-md active:scale-95 transition-all">📸 KAMERA</button>
+                <input type="file" id="camera-input" accept="image/*" capture="camera" class="hidden" onchange="previewImage(event)">
+                <button onclick="document.getElementById('file-input').click()" class="bg-[#ffc107] text-black font-bold py-3 rounded-xl text-xs shadow-md active:scale-95 transition-all">🖼️ GALERI</button>
+                <input type="file" id="file-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+            </div>
+
+            <button id="btn-kirim" onclick="sendData()" class="w-full bg-[#28a745] text-white font-black py-4 rounded-2xl shadow-xl text-lg uppercase tracking-tight active:scale-95 transition-all">🚀 Kirim Data</button>
+        </div>
+    </div>
+
+    <script>
+    // DATA DROPDOWN
+    const mappingPetugas = {
+        "Mariatul Kiftiah": ["HK 3 Outlet", "HK 5", "HK 6", "HK 2.1 Outlet", "HK 1.1 Pasar", "HK 1.1 Outlet"],
+        "Sri Wahyu Gantianiyari": ["HK 3 Outlet", "HK 5", "HK 6", "HK 2.1 Outlet", "HK 1.2 Pasar", "HK 1.2 Outlet"],
+        "Nazli Yunita": ["HK 3 Outlet", "HK 6", "HK 2.1 Pasar", "HK 2.1 Outlet"],
+        "Novrina Tri Saputri": ["HK 3 Pasar", "HK 3 Outlet", "HK 4", "HK 2.2 Outlet"],
+        "Yuli Misdi Yanti": ["HK 3 Outlet", "HK 4", "HK 1.1 Pasar", "HK 1.1 Outlet"],
+        "Lena Fetriyani": ["HK 3 Outlet", "HK 4", "HK 2.2 Pasar", "HK 2.2 Outlet"]
+    };
+
+    const surveyData = [
+        {resp: "ABDUL MUJIB", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "ABDUL MUJIB", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "ABDUL MUJIB", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "ABDUL MUJIB", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "ABDUL MUJIB", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "ABDUL MUJIB", kom: "BERAS", kul: "SIAM RUKUT 1 KG"},
+{resp: "Acil Irus / Rumina", kom: "IKAN MAS", kul: "HIDUP SEGAR 1 KG"},
+{resp: "Acil Irus / Rumina", kom: "IKAN NILA", kul: "SEGAR 1 KG"},
+{resp: "ADI", kom: "JAGUNG MANIS", kul: "SEDANG SEGAR 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "IKAN BANDENG/IKAN BOLU", kul: "SEDANG 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "IKAN KEMBUNG/IKAN GEMBUNG/ IKAN BANYAR/IKAN GEMBOLO/ IKAN ASO-ASO", kul: "SEDANG 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "IKAN LAYANG/ IKAN BENGGOL", kul: "BESAR 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "IKAN TONGKOL/ IKAN AMBU-AMBU", kul: "SEDANG SEGAR 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "CUMI-CUMI", kul: "BESAR SEGAR 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "CUMI-CUMI", kul: "SEDANG 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "UDANG BASAH", kul: "BESAR SEGAR 1 KG"},
+{resp: "ADI/HADI 085387600510", kom: "UDANG BASAH", kul: "SEDANG 1 KG"},
+{resp: "ADUL IKAN ASIN", kom: "IKAN ASIN GABUS", kul: "BESAR 1 KG"},
+{resp: "ADUL IKAN ASIN", kom: "IKAN ASIN GABUS", kul: "SEDANG 1 KG"},
+{resp: "ADUL IKAN ASIN", kom: "IKAN ASIN BELAH", kul: "BAIK KERING 1 KG"},
+{resp: "ADUL IKAN ASIN", kom: "IKAN ASIN PEDA", kul: "BAIK KERING 1 KG"},
+{resp: "ADUL IKAN ASIN", kom: "IKAN ASIN TENGGIRI", kul: "NO.2 1 KG"},
+{resp: "ADUL IKAN ASIN", kom: "IKAN ASIN SEPAT", kul: "SIAM SEDANG 1 KG"},
+{resp: "AHMAD MARNI", kom: "TELUR AYAM KAMPUNG", kul: "BAIK/BUTIR 1 BUTIR"},
+{resp: "AHMAD MARNI", kom: "TELUR AYAM RAS", kul: "SEDANG 1 KG"},
+{resp: "Aisyah", kom: "IKAN BAUNG", kul: "BESAR 1 KG"},
+{resp: "Aisyah", kom: "IKAN BAUNG", kul: "SEDANG 1 KG"},
+{resp: "Aisyah", kom: "IKAN GABUS", kul: "BESAR 1 KG"},
+{resp: "Aisyah", kom: "IKAN GABUS", kul: "SEDANG 1 KG"},
+{resp: "Aisyah", kom: "IKAN PAPUYU", kul: "BESAR 1 KG"},
+{resp: "Aisyah", kom: "IKAN PAPUYU", kul: "SEDANG 1 KG"},
+{resp: "Aisyah", kom: "IKAN SEPAT SIAM", kul: "SEDANG 1 KG"},
+{resp: "AKHMAD RIJANI", kom: "BAHAN BAKAR RUMAH TANGGA", kul: "ELPIJI 12 KG"},
+{resp: "AKHMAD RIJANI", kom: "BAHAN BAKAR RUMAH TANGGA", kul: "ELPIJI 3 KG"},
+{resp: "AKHMAD RIJANI", kom: "BAHAN BAKAR RUMAH TANGGA", kul: "ELPIJI 5.50 KG"},
+{resp: "AMIN", kom: "IKAN BAUNG", kul: "BESAR 1 KG"},
+{resp: "Amin", kom: "IKAN BAUNG", kul: "BESAR 1 KG"},
+{resp: "AMIN", kom: "IKAN BAUNG", kul: "SEDANG 1 KG"},
+{resp: "Amin", kom: "IKAN BAUNG", kul: "SEDANG 1 KG"},
+{resp: "AMIN", kom: "IKAN PATIN", kul: "SEDANG 1 KG"},
+{resp: "Anjar", kom: "DAGING AYAM RAS", kul: "PAHA 1 KG"},
+{resp: "Anjar", kom: "DAGING AYAM RAS", kul: "DADA 1 KILOGRAM"},
+{resp: "Anjar", kom: "DAGING AYAM RAS", kul: "SETENGAH AYAM 1 KILOGRAM"},
+{resp: "Anjar", kom: "DAGING AYAM RAS", kul: "UTUH TANPA JEROAN  1 KILOGRAM"},
+{resp: "ARIYANI", kom: "BAYAM", kul: "CABUT MASIH SEGAR 1 KG"},
+{resp: "ARIYANI", kom: "DAUN SINGKONG", kul: "MASIH SEGAR 1 KG"},
+{resp: "ARIYANI", kom: "KANGKUNG", kul: "CABUT MASIH SEGAR 1 KG"},
+{resp: "ARIYANI", kom: "KOL PUTIH/KUBIS", kul: "MASIH SEGAR 1 KG"},
+{resp: "ARIYANI", kom: "KACANG PANJANG", kul: "MASIH SEGAR 1 KG"},
+{resp: "ARIYANI", kom: "DAUN BAWANG", kul: "MASIH SEGAR 1 KG"},
+{resp: "ARIYANI", kom: "DAUN SELEDRI", kul: "SEGAR 1 ONS 100 GR"},
+{resp: "ARIYANI", kom: "WORTEL", kul: "LOKAL BESAR 1 KG"},
+{resp: "ARIYANI", kom: "KENTANG", kul: "BAIK SEDANG 1 KG"},
+{resp: "Aspan 085391728820", kom: "TELUR AYAM KAMPUNG", kul: "BAIK/BUTIR 1 BUTIR"},
+{resp: "Aspan 085391728820", kom: "TELUR AYAM RAS", kul: "SEDANG 1 KG"},
+{resp: "Asrani", kom: "BAWANG MERAH", kul: "BAWANG JAWA 1 KG"},
+{resp: "Asrani", kom: "BAWANG MERAH", kul: "BAWANG MERAH SULAWESI 1 KILOGRAM"},
+{resp: "Asrani", kom: "BAWANG MERAH", kul: "BIMA 1 KILOGRAM"},
+{resp: "Asrani", kom: "BAWANG PUTIH", kul: "BERSIH SEDANG 1 KG"},
+{resp: "Asrani", kom: "KACANG TANAH", kul: "DIKUPAS BAIK KERING 1 KG"},
+{resp: "Asrani", kom: "GARAM", kul: "CAP KAPAL 500 GR"},
+{resp: "Asrani", kom: "GARAM", kul: "KAPAL 250 GR"},
+{resp: "Bakri", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "Bakri", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "Bakri", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "Bakri", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "Bakri", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "BAKRI", kom: "BAWANG MERAH", kul: "BAWANG JAWA 1 KG"},
+{resp: "BAKRI", kom: "BAWANG MERAH", kul: "BAWANG MERAH SULAWESI 1 KILOGRAM"},
+{resp: "BAKRI", kom: "BAWANG MERAH", kul: "BIMA 1 KILOGRAM"},
+{resp: "BAKRI", kom: "BAWANG PUTIH", kul: "BERSIH SEDANG 1 KG"},
+{resp: "BAKRI", kom: "KACANG TANAH", kul: "DIKUPAS BAIK KERING 1 KG"},
+{resp: "BAKRI", kom: "GARAM", kul: "CAP KAPAL 500 GR"},
+{resp: "BAKRI", kom: "GARAM", kul: "KAPAL 250 GR"},
+{resp: "BUDI", kom: "DAGING AYAM RAS", kul: "PAHA 1 KG"},
+{resp: "BUDI", kom: "DAGING AYAM RAS", kul: "DADA 1 KILOGRAM"},
+{resp: "BUDI", kom: "DAGING AYAM RAS", kul: "SETENGAH AYAM 1 KILOGRAM"},
+{resp: "BUDI", kom: "DAGING AYAM RAS", kul: "UTUH TANPA JEROAN  1 KILOGRAM"},
+{resp: "CITRA", kom: "BAYAM", kul: "CABUT MASIH SEGAR 1 KG"},
+{resp: "CITRA", kom: "DAUN SINGKONG", kul: "MASIH SEGAR 1 KG"},
+{resp: "CITRA", kom: "KANGKUNG", kul: "CABUT MASIH SEGAR 1 KG"},
+{resp: "CITRA", kom: "KETIMUN", kul: "BESAR SEGAR 1 KG"},
+{resp: "CITRA", kom: "TERONG", kul: "UNGU SEGAR 1 KG"},
+{resp: "DARU", kom: "TOMAT", kul: "MERAH SEGAR 1 KG"},
+{resp: "DARU", kom: "TOMAT", kul: "CAMPUR 1 KILOGRAM"},
+{resp: "DARU", kom: "CABAI MERAH", kul: "BESAR SEGAR 1 KG"},
+{resp: "DARU", kom: "CABAI MERAH", kul: "CABAI BESAR HIJAU 1 KG"},
+{resp: "DARU", kom: "CABAI MERAH", kul: "KERITING SEDANG 1 KG"},
+{resp: "DARU", kom: "CABAI RAWIT", kul: "CAMPUR SEGAR 1 KG"},
+{resp: "DARU", kom: "CABAI RAWIT", kul: "TIUNG 1 KG"},
+{resp: "DARU", kom: "CABAI RAWIT", kul: "TIUNG PIPILAN 1 KG"},
+{resp: "DARU", kom: "BUNCIS", kul: "MASIH SEGAR 1 KG"},
+{resp: "DUGI", kom: "PETAI", kul: "PAPAN 1 KG"},
+{resp: "FATIMAH/FARHAN 081251932341", kom: "KELAPA", kul: "SUDAH DIKUPAS KECIL 1 BUAH"},
+{resp: "FATIMAH/FARHAN 081251932341", kom: "KELAPA", kul: "SUDAH DIKUPAS SEDANG 1 BUAH"},
+{resp: "Feri 085350606109", kom: "TOMAT", kul: "MERAH SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "TOMAT", kul: "CAMPUR 1 KILOGRAM"},
+{resp: "Feri 085350606109", kom: "CABAI MERAH", kul: "BESAR SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "CABAI MERAH", kul: "CABAI BESAR HIJAU 1 KG"},
+{resp: "Feri 085350606109", kom: "CABAI MERAH", kul: "KERITING SEDANG 1 KG"},
+{resp: "Feri 085350606109", kom: "CABAI RAWIT", kul: "CAMPUR SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "CABAI RAWIT", kul: "TIUNG 1 KG"},
+{resp: "Feri 085350606109", kom: "CABAI RAWIT", kul: "TIUNG PIPILAN 1 KG"},
+{resp: "Feri 085350606109", kom: "SAWI HIJAU", kul: "MASIH SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "KETIMUN", kul: "SEDANG SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "JAGUNG MANIS", kul: "BESAR SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "TERONG", kul: "UNGU SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "BUNCIS", kul: "MASIH SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "KACANG PANJANG", kul: "MASIH SEGAR 1 KG"},
+{resp: "Feri 085350606109", kom: "DAUN SELEDRI", kul: "SEGAR 1 ONS 100 GR"},
+{resp: "H HAMDI", kom: "EMAS PERHIASAN", kul: "24 KARAT/PM99 1 GR"},
+{resp: "H ISAR", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "H ISAR", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "H ISAR", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "H ISAR", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "H ISAR", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "H ISAR", kom: "BERAS", kul: "SIAM RUKUT 1 KG"},
+{resp: "H. AGUS 081349569980", kom: "DAGING SAPI", kul: "BISTIK 1 KG"},
+{resp: "H. AGUS 081349569980", kom: "DAGING SAPI", kul: "CINCANG/TETELAN 1 KG"},
+{resp: "H. AGUS 081349569980", kom: "DAGING SAPI", kul: "HAS 1 KG"},
+{resp: "H. Ainal Fajri 085332188991", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "H. Ainal Fajri 085332188991", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "H. Ainal Fajri 085332188991", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "H. Ainal Fajri 085332188991", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "H. Ainal Fajri 085332188991", kom: "BERAS", kul: "SIAM RUKUT 1 KG"},
+{resp: "H. SUPIANI", kom: "DAGING SAPI", kul: "BISTIK 1 KG"},
+{resp: "H. SUPIANI", kom: "DAGING SAPI", kul: "CINCANG/TETELAN 1 KG"},
+{resp: "H. SUPIANI", kom: "DAGING SAPI", kul: "HAS 1 KG"},
+{resp: "Hadijah", kom: "TELUR AYAM RAS", kul: "SEDANG 1 KG"},
+{resp: "HAIRULLAH / 085248909754", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "HAIRULLAH / 085248909754", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "HAIRULLAH / 085248909754", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "HAIRULLAH / 085248909754", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "Halimatus", kom: "TELUR AYAM KAMPUNG", kul: "BAIK/BUTIR 1 BUTIR"},
+{resp: "Halimatus", kom: "TELUR AYAM RAS", kul: "SEDANG 1 KG"},
+{resp: "HJ MISNA", kom: "KOL PUTIH/KUBIS", kul: "MASIH SEGAR 1 KG"},
+{resp: "HJ MISNA", kom: "KENTANG", kul: "BAIK SEDANG 1 KG"},
+{resp: "HJ MISNA", kom: "KENTANG", kul: "BESAR 1 KG"},
+{resp: "Hj. Ila", kom: "DAGING AYAM RAS", kul: "PAHA 1 KG"},
+{resp: "Hj. Ila", kom: "DAGING AYAM RAS", kul: "DADA 1 KILOGRAM"},
+{resp: "Hj. Ila", kom: "DAGING AYAM RAS", kul: "SETENGAH AYAM 1 KILOGRAM"},
+{resp: "Hj. Ila", kom: "DAGING AYAM RAS", kul: "UTUH TANPA JEROAN  1 KILOGRAM"},
+{resp: "Hj. Nenin Herlena 085251606004", kom: "TAHU MENTAH", kul: "PUTIH BERSIH 1 KG"},
+{resp: "Hj. Nenin Herlena 085251606004", kom: "TEMPE", kul: "UKURAN 1/2 KILO 500 GR"},
+{resp: "Hj. Nenin Herlena 085251606004", kom: "TEMPE", kul: "TEMPE BIASA 1 PAPAN 400 GRAM"},
+{resp: "Imi", kom: "IKAN BANDENG/IKAN BOLU", kul: "SEDANG 1 KG"},
+{resp: "Imi", kom: "IKAN KEMBUNG/IKAN GEMBUNG/ IKAN BANYAR/IKAN GEMBOLO/ IKAN ASO-ASO", kul: "SEDANG 1 KG"},
+{resp: "Imi", kom: "IKAN LAYANG/ IKAN BENGGOL", kul: "BESAR 1 KG"},
+{resp: "Imi", kom: "IKAN TONGKOL/ IKAN AMBU-AMBU", kul: "SEDANG SEGAR 1 KG"},
+{resp: "Imi", kom: "CUMI-CUMI", kul: "BESAR SEGAR 1 KG"},
+{resp: "Imi", kom: "CUMI-CUMI", kul: "SEDANG 1 KG"},
+{resp: "Imi", kom: "UDANG BASAH", kul: "BESAR SEGAR 1 KG"},
+{resp: "Imi", kom: "UDANG BASAH", kul: "SEDANG 1 KG"},
+{resp: "IYANG", kom: "TAHU MENTAH", kul: "PUTIH BERSIH 1 KG"},
+{resp: "IYANG", kom: "TEMPE", kul: "TEMPE BIASA 1 PAPAN 400 GRAM"},
+{resp: "JAMILAH", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "JAMILAH", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "JAMILAH", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "JAMILAH", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "JAMILAH", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "JAMILAH", kom: "BERAS", kul: "SIAM RUKUT 1 KG"},
+{resp: "Jamrah", kom: "EMAS PERHIASAN", kul: "8 KARAT 1 GR"},
+{resp: "jariah", kom: "BAYAM", kul: "CABUT MASIH SEGAR 1 KG"},
+{resp: "jariah", kom: "DAUN SINGKONG", kul: "MASIH SEGAR 1 KG"},
+{resp: "jariah", kom: "KANGKUNG", kul: "CABUT MASIH SEGAR 1 KG"},
+{resp: "jariah", kom: "KANGKUNG", kul: "POTONG SEGAR 1 KG"},
+{resp: "jariah", kom: "SAWI HIJAU", kul: "MASIH SEGAR 1 KG"},
+{resp: "jariah", kom: "JAGUNG MANIS", kul: "SEDANG SEGAR 1 KG"},
+{resp: "jariah", kom: "LABU PARANG/MANIS/MERAH/KUNING", kul: "MASIH SEGAR 1 KG"},
+{resp: "jariah", kom: "KACANG PANJANG", kul: "MASIH SEGAR 1 KG"},
+{resp: "KAROMAH", kom: "IKAN BAUNG", kul: "BESAR 1 KG"},
+{resp: "KAROMAH", kom: "IKAN BAUNG", kul: "SEDANG 1 KG"},
+{resp: "KHADIJAH", kom: "IKAN LELE", kul: "KECIL 1 KG"},
+{resp: "KHADIJAH", kom: "IKAN LELE", kul: "SEDANG 1 KG"},
+{resp: "KHADIJAH", kom: "IKAN MAS", kul: "HIDUP SEGAR 1 KG"},
+{resp: "KHADIJAH", kom: "IKAN NILA", kul: "SEGAR 1 KG"},
+{resp: "MAMA ZAINAL", kom: "KELAPA", kul: "BELUM DIKUPAS SEDANG 1 BUAH"},
+{resp: "MAMA ZAINAL", kom: "KELAPA", kul: "SUDAH DIKUPAS KECIL 1 BUAH"},
+{resp: "Misran", kom: "IKAN LELE", kul: "KECIL 1 KG"},
+{resp: "Misran", kom: "IKAN LELE", kul: "SEDANG 1 KG"},
+{resp: "Misran", kom: "IKAN LELE", kul: "SEGAR 1 KG"},
+{resp: "Muhri", kom: "IKAN LELE", kul: "KECIL 1 KG"},
+{resp: "Muhri", kom: "IKAN LELE", kul: "SEDANG 1 KG"},
+{resp: "Muhri", kom: "IKAN LELE", kul: "SEGAR 1 KG"},
+{resp: "PAMAN UTUH", kom: "IKAN GABUS", kul: "KECIL 1 KG"},
+{resp: "PAMAN UTUH", kom: "IKAN GABUS", kul: "SEDANG 1 KG"},
+{resp: "PAMAN UTUH", kom: "IKAN PAPUYU", kul: "SEDANG 1 KG"},
+{resp: "RUSTAM", kom: "SAWI HIJAU", kul: "MASIH SEGAR 1 KG"},
+{resp: "RUSTAM", kom: "LABU PARANG/MANIS/MERAH/KUNING", kul: "MASIH SEGAR 1 KG"},
+{resp: "SAMIAH", kom: "IKAN PATIN", kul: "SEDANG 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN GABUS", kul: "BESAR 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN GABUS", kul: "SEDANG 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN BELAH", kul: "BAIK KERING 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN PEDA", kul: "SEDANG 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN TENGGIRI", kul: "SEDANG 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN TENGGIRI", kul: "SEDANG POTONG 1 KG"},
+{resp: "Sarifah", kom: "IKAN ASIN SEPAT", kul: "SIAM SEDANG 1 KG"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW FORTIGRO FULLCREAM DUS 390 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW FORTIGRO FULLCREAM DUS 390 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW FORTIGROW FULLCREAM KEMASAN 780 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW FORTIGROW FULLCREAM KEMASAN 780 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW FULL CREAM 390 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW FULL CREAM 390 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW INSTANT 390 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK", kul: "DANCOW INSTANT 390 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "BEBELAC 3 800 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "BEBELAC 3 800 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "DANCOW 1000 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "SGM 1+ 900 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "SGM 1+ 900 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "FRISIAN FLAG PRIMAGROW 3+ KEMASAN DUS 360 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BALITA", kul: "FRISIAN FLAG PRIMAGRO 3+ MADU KOTAK DUS 1200 GRAM"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BAYI", kul: "SGM ANANDA 1000 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BAYI", kul: "SGM ANANDA 6-12 BULAN 400 GR"},
+{resp: "SINAR ARIFIN", kom: "SUSU BUBUK UNTUK BAYI", kul: "SGM ANANDA 6-12 BULAN 400 GR"},
+{resp: "SITI AISYAH", kom: "MIE KERING INSTANT", kul: "MIE SEDAAP GORENG 91 GR"},
+{resp: "SITI AISYAH", kom: "MIE KERING INSTANT", kul: "SARIMI BASO SAP 77 GR"},
+{resp: "SITI AISYAH", kom: "MIE KERING INSTANT", kul: "INDOMIE MI GORENG 80 GRAM"},
+{resp: "SITI AISYAH", kom: "MIE KERING INSTANT", kul: "SOTO BANJAR LIMAU KUIT 75 GRAM"},
+{resp: "SPBU HIKUN", kom: "BENSIN", kul: "PERTALITE 1 LT"},
+{resp: "SPBU HIKUN", kom: "BENSIN", kul: "PERTAMAX 1 LT"},
+{resp: "SPBU MABU'UN", kom: "BENSIN", kul: "PERTALITE 1 LT"},
+{resp: "SPBU MABU'UN", kom: "BENSIN", kul: "PERTAMAX 1 LT"},
+{resp: "SPBU MABU'UN", kom: "BENSIN", kul: "PERTAMAX TURBO 1 LT"},
+{resp: "Subarni (Bude)", kom: "PETAI", kul: "DIKUPAS 1 KG"},
+{resp: "Subarni (Bude)", kom: "PETAI", kul: "PAPAN 1 KG"},
+{resp: "SUHAIDI", kom: "DAGING SAPI", kul: "BISTIK 1 KG"},
+{resp: "SUHAIDI", kom: "DAGING SAPI", kul: "CINCANG/TETELAN 1 KG"},
+{resp: "SUHAIDI", kom: "DAGING SAPI", kul: "HAS 1 KG"},
+{resp: "supiani", kom: "IKAN BAUNG", kul: "BESAR 1 KG"},
+{resp: "supiani", kom: "IKAN BAUNG", kul: "SEDANG 1 KG"},
+{resp: "TOKO ADUL SEMBAKO", kom: "TEPUNG TERIGU", kul: "KUNCI BIRU RODA BIRU 1 KG"},
+{resp: "TOKO ADUL SEMBAKO", kom: "TEPUNG TERIGU", kul: "LENCANA MERAH 1 KG"},
+{resp: "TOKO ADUL SEMBAKO", kom: "TEPUNG TERIGU", kul: "BOGASARI SEGITIGA BIRU 1 KG"},
+{resp: "TOKO ADUL SEMBAKO", kom: "SUSU KENTAL MANIS", kul: "CAP ENAAK 370 GR"},
+{resp: "TOKO ADUL SEMBAKO", kom: "SUSU KENTAL MANIS", kul: "INDOMILK 370 GR"},
+{resp: "TOKO ADUL SEMBAKO", kom: "MINYAK GORENG", kul: "BIMOLI 2 LT"},
+{resp: "TOKO ADUL SEMBAKO", kom: "MINYAK GORENG", kul: "KUNCI MAS 2 LT"},
+{resp: "TOKO ADUL SEMBAKO", kom: "MINYAK GORENG", kul: "MINYAK KITA 2 LT"},
+{resp: "TOKO ADUL SEMBAKO", kom: "GULA PASIR", kul: "SHS 1 KG"},
+{resp: "TOKO AHMAD", kom: "EMAS PERHIASAN", kul: "24 KARAT/PM99 1 GR"},
+{resp: "TOKO AHMAD", kom: "EMAS PERHIASAN", kul: "8 KARAT 1 GR"},
+{resp: "TOKO AKMAL", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "TOKO AKMAL", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "TOKO AKMAL", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "TOKO AKMAL", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "TOKO AKMAL", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "TOKO AKMAL", kom: "BERAS", kul: "SIAM RUKUT 1 KG"},
+{resp: "TOKO ANANG", kom: "MIE KERING INSTANT", kul: "MIE SEDAAP GORENG 91 GR"},
+{resp: "TOKO ANANG", kom: "MIE KERING INSTANT", kul: "SARIMI BASO 85 GR"},
+{resp: "TOKO ANANG", kom: "MIE KERING INSTANT", kul: "SARIMI BASO SAP 77 GR"},
+{resp: "TOKO ANANG", kom: "MIE KERING INSTANT", kul: "INDOMIE MI GORENG 80 GRAM"},
+{resp: "TOKO ANANG", kom: "MIE KERING INSTANT", kul: "SOTO BANJAR LIMAU KUIT 75 GRAM"},
+{resp: "TOKO ANANG", kom: "SABUN CAIR/CUCI PIRING", kul: "MAMA LIME 680 ML"},
+{resp: "TOKO ANANG", kom: "SABUN CAIR/CUCI PIRING", kul: "SUNLIGHT 370 ML"},
+{resp: "TOKO ANANG", kom: "SABUN DETERGEN BUBUK", kul: "ATTACK JAZZ 1 800 GR"},
+{resp: "TOKO ANANG", kom: "SABUN DETERGEN BUBUK", kul: "DAIA PUTIH 800 GR"},
+{resp: "TOKO ANANG", kom: "SABUN DETERGEN BUBUK", kul: "RINSO ANTI NODA 770 GR"},
+{resp: "TOKO ANANG", kom: "DETERGEN CAIR", kul: "RINSO CAIR 800 ML"},
+{resp: "TOKO ANANG", kom: "DETERGEN CAIR", kul: "SO KLIN LIQUID POUCH 720 MILILITER"},
+{resp: "TOKO ARSYAD (GAS)", kom: "BAHAN BAKAR RUMAH TANGGA", kul: "ELPIJI 12 KG"},
+{resp: "TOKO ARSYAD (GAS)", kom: "BAHAN BAKAR RUMAH TANGGA", kul: "ELPIJI 3 KG"},
+{resp: "TOKO ARSYAD (GAS)", kom: "BAHAN BAKAR RUMAH TANGGA", kul: "ELPIJI 5.50 KG"},
+{resp: "TOKO BERKAT (081250997333)", kom: "EMAS PERHIASAN", kul: "24 KARAT/PM99 1 GR"},
+{resp: "TOKO BERKAT (081250997333)", kom: "EMAS PERHIASAN", kul: "8 KARAT 1 GR"},
+{resp: "TOKO BERKAT AULIA 2", kom: "EMAS PERHIASAN", kul: "24 KARAT/PM99 1 GR"},
+{resp: "TOKO BERKAT AULIA 2", kom: "EMAS PERHIASAN", kul: "8 KARAT 1 GR"},
+{resp: "TOKO BERKAT BERAS", kom: "BERAS", kul: "LANTIK 1 KG"},
+{resp: "TOKO BERKAT BERAS", kom: "BERAS", kul: "MAYANG 1 KG"},
+{resp: "TOKO BERKAT BERAS", kom: "BERAS", kul: "MAYANG USANG 1 KG"},
+{resp: "TOKO BERKAT BERAS", kom: "BERAS", kul: "MAYORI 1 KG"},
+{resp: "TOKO BERKAT BERAS", kom: "BERAS", kul: "SIAM MADU 1 KG"},
+{resp: "TOKO BERKAT BERAS", kom: "BERAS", kul: "SIAM RUKUT 1 KG"},
+{resp: "Toko H Yayan", kom: "TEPUNG TERIGU", kul: "KUNCI BIRU RODA BIRU 1 KG"},
+{resp: "Toko H Yayan", kom: "TEPUNG TERIGU", kul: "BOGASARI SEGITIGA BIRU 1 KG"},
+{resp: "Toko H Yayan", kom: "SUSU KENTAL MANIS", kul: "CAP ENAAK 370 GR"},
+{resp: "Toko H Yayan", kom: "SUSU KENTAL MANIS", kul: "FRISIAN FLAG 370 GR"},
+{resp: "Toko H Yayan", kom: "SUSU KENTAL MANIS", kul: "INDOMILK 370 GR"},
+{resp: "Toko H Yayan", kom: "MINYAK GORENG", kul: "BIMOLI 2 LT"},
+{resp: "Toko H Yayan", kom: "MINYAK GORENG", kul: "KUNCI MAS 2 LT"},
+{resp: "Toko H Yayan", kom: "MINYAK GORENG", kul: "MINYAK KITA 2 LT"},
+{resp: "Toko H Yayan", kom: "GULA PASIR", kul: "GULAKU 1 KG"},
+{resp: "Toko H Yayan", kom: "GULA PASIR", kul: "SHS 1 KG"},
+{resp: "Toko H Yayan", kom: "SABUN CAIR/CUCI PIRING", kul: "EKONOMI 650 ML"},
+{resp: "Toko H Yayan", kom: "SABUN CAIR/CUCI PIRING", kul: "MAMA LIME 680 ML"},
+{resp: "Toko H Yayan", kom: "SABUN CAIR/CUCI PIRING", kul: "SUNLIGHT 370 ML"},
+{resp: "Toko H Yayan", kom: "SABUN DETERGEN BUBUK", kul: "DAIA PUTIH 800 GR"},
+{resp: "Toko H Yayan", kom: "DETERGEN CAIR", kul: "RINSO CAIR 700 ML"},
+{resp: "Toko H Yayan", kom: "DETERGEN CAIR", kul: "SO KLIN LIQUID POUCH 720 MILILITER"},
+{resp: "Toko Hemart", kom: "SUSU BUBUK", kul: "DANCOW FORTIGROW FULLCREAM KEMASAN 780 GRAM"},
+{resp: "Toko Hemart", kom: "SUSU BUBUK", kul: "DANCOW FULL CREAM 390 GRAM"},
+{resp: "Toko Hemart", kom: "SUSU BUBUK", kul: "DANCOW INSTANT 390 GRAM"},
+{resp: "Toko Hemart", kom: "SUSU BUBUK UNTUK BALITA", kul: "BEBELAC 3 800 GR"},
+{resp: "Toko Hemart", kom: "SUSU BUBUK UNTUK BALITA", kul: "DANCOW 750 GR"},
+{resp: "Toko Hemart", kom: "SUSU BUBUK UNTUK BALITA", kul: "SGM 1+ 900 GR"},
+{resp: "Toko Udin 081250998115", kom: "TEPUNG TERIGU", kul: "KUNCI BIRU RODA BIRU 1 KG"},
+{resp: "Toko Udin 081250998115", kom: "TEPUNG TERIGU", kul: "LENCANA MERAH 1 KG"},
+{resp: "Toko Udin 081250998115", kom: "TEPUNG TERIGU", kul: "BOGASARI SEGITIGA BIRU 1 KG"},
+{resp: "Toko Udin 081250998115", kom: "SUSU KENTAL MANIS", kul: "CAP ENAAK 370 GR"},
+{resp: "Toko Udin 081250998115", kom: "SUSU KENTAL MANIS", kul: "FRISIAN FLAG 370 GR"},
+{resp: "Toko Udin 081250998115", kom: "MINYAK GORENG", kul: "BIMOLI 2 LT"},
+{resp: "Toko Udin 081250998115", kom: "MINYAK GORENG", kul: "KUNCI MAS 2 LT"},
+{resp: "Toko Udin 081250998115", kom: "MINYAK GORENG", kul: "MINYAK KITA 2 LT"},
+{resp: "Toko Udin 081250998115", kom: "GULA PASIR", kul: "SHS 1 KG"},
+{resp: "Toko Udin 081250998115", kom: "MIE KERING INSTANT", kul: "MIE SEDAAP GORENG 91 GR"},
+{resp: "Toko Udin 081250998115", kom: "MIE KERING INSTANT", kul: "SARIMI BASO 85 GR"},
+{resp: "Toko Udin 081250998115", kom: "MIE KERING INSTANT", kul: "INDOMIE MI GORENG 80 GRAM"},
+{resp: "Toko Udin 081250998115", kom: "MIE KERING INSTANT", kul: "SOTO BANJAR LIMAU KUIT 75 GRAM"},
+{resp: "Toko Udin 081250998115", kom: "SABUN CAIR/CUCI PIRING", kul: "EKONOMI 650 ML"},
+{resp: "Toko Udin 081250998115", kom: "SABUN CAIR/CUCI PIRING", kul: "MAMA LIME 680 ML"},
+{resp: "Toko Udin 081250998115", kom: "SABUN CAIR/CUCI PIRING", kul: "SUNLIGHT 370 ML"},
+{resp: "Toko Udin 081250998115", kom: "SABUN DETERGEN BUBUK", kul: "DAIA PUTIH 800 GR"},
+{resp: "TOKO UPIK", kom: "DETERGEN CAIR", kul: "RINSO CAIR 800 ML"},
+{resp: "TOKO UPIK", kom: "DETERGEN CAIR", kul: "SO KLIN LIQUID POUCH 720 MILILITER"},
+{resp: "TOKO YAHYA", kom: "SABUN CAIR/CUCI PIRING", kul: "EKONOMI 650 ML"},
+{resp: "TOKO YAHYA", kom: "SABUN DETERGEN BUBUK", kul: "ATTACK JAZZ 1 800 GR"},
+{resp: "TOKO YAHYA", kom: "SABUN DETERGEN BUBUK", kul: "RINSO ANTI NODA 770 GR"},
+{resp: "TOKO YAHYA", kom: "SABUN DETERGEN BUBUK", kul: "BOOM 260 GRAM"},
+{resp: "Usman", kom: "TOMAT", kul: "MERAH SEGAR 1 KG"},
+{resp: "Usman", kom: "TOMAT", kul: "CAMPUR 1 KILOGRAM"},
+{resp: "Usman", kom: "CABAI MERAH", kul: "BESAR SEGAR 1 KG"},
+{resp: "Usman", kom: "CABAI RAWIT", kul: "CAMPUR SEGAR 1 KG"},
+{resp: "Usman", kom: "CABAI RAWIT", kul: "TIUNG 1 KG"},
+{resp: "Usman", kom: "CABAI RAWIT", kul: "TIUNG PIPILAN 1 KG"},
+{resp: "Usman", kom: "KOL PUTIH/KUBIS", kul: "MASIH SEGAR 1 KG"},
+{resp: "Usman", kom: "KETIMUN", kul: "BESAR SEGAR 1 KG"},
+{resp: "Usman", kom: "TERONG", kul: "UNGU SEGAR 1 KG"},
+{resp: "Usman", kom: "DAUN BAWANG", kul: "MASIH SEGAR 1 KG"},
+{resp: "Usman", kom: "DAUN SELEDRI", kul: "SEGAR 1 ONS 100 GR"},
+{resp: "Usman", kom: "WORTEL", kul: "SEGAR 1 KG"},
+{resp: "Usman", kom: "KENTANG", kul: "BESAR 1 KG"},
+{resp: "UTUT", kom: "IKAN GABUS", kul: "KECIL 1 KG"},
+{resp: "UTUT", kom: "IKAN GABUS", kul: "SEDANG 1 KG"},
+{resp: "UTUT", kom: "IKAN PAPUYU", kul: "BESAR 1 KG"},
+{resp: "UTUT", kom: "IKAN PAPUYU", kul: "SEDANG 1 KG"},
+{resp: "UTUT", kom: "IKAN SEPAT SIAM", kul: "SEDANG 1 KG"},
+{resp: "VIA", kom: "SAWI HIJAU", kul: "MASIH SEGAR 1 KG"},
+{resp: "YULIANA/SUDI 085348648335", kom: "IKAN MAS", kul: "HIDUP SEGAR 1 KG"},
+{resp: "YULIANA/SUDI 085348648335", kom: "IKAN NILA", kul: "SEGAR 1 KG"},
+{resp: "Zam zami", kom: "BAWANG MERAH", kul: "BAWANG JAWA 1 KG"},
+{resp: "Zam zami", kom: "BAWANG MERAH", kul: "BAWANG MERAH SULAWESI 1 KILOGRAM"},
+{resp: "Zam zami", kom: "BAWANG MERAH", kul: "BIMA 1 KILOGRAM"},
+{resp: "Zam zami", kom: "BAWANG PUTIH", kul: "BERSIH SEDANG 1 KG"}
+    ];
+
+    window.onload = function() {
+        const petSelect = document.getElementById('petugas');
+        Object.keys(mappingPetugas).forEach(p => petSelect.add(new Option(p, p)));
+
+        const resSelect = document.getElementById('responden');
+        const uniqueRes = [...new Set(surveyData.map(d => d.resp))].sort();
+        uniqueRes.forEach(r => resSelect.add(new Option(r, r)));
+
+        setTimeout(() => document.getElementById('splash-screen').style.display = 'none', 1500);
+    };
+
+    function updateKegiatan() {
+        const pet = document.getElementById('petugas').value;
+        const kegSelect = document.getElementById('kegiatan');
+        kegSelect.innerHTML = '<option value="">-- Pilih Kegiatan --</option>';
+        if (pet) mappingPetugas[pet].forEach(k => kegSelect.add(new Option(k, k)));
+    }
+
+    function updateKomoditas() {
+        const res = document.getElementById('responden').value;
+        const komSelect = document.getElementById('komoditas');
+        komSelect.innerHTML = '<option value="">-- Pilih Komoditas --</option>';
+        if (res) {
+            const filteredKom = [...new Set(surveyData.filter(d => d.resp === res).map(d => d.kom))];
+            filteredKom.forEach(k => komSelect.add(new Option(k, k)));
+        }
+    }
+
+    function updateKualitas() {
+        const res = document.getElementById('responden').value;
+        const kom = document.getElementById('komoditas').value;
+        const kulSelect = document.getElementById('kualitas');
+        kulSelect.innerHTML = '<option value="">-- Pilih Kualitas --</option>';
+        if (res && kom) {
+            surveyData.filter(d => d.resp === res && d.kom === kom).forEach(k => kulSelect.add(new Option(k.kul, k.kul)));
+        }
+    }
+
+    function previewImage(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = document.getElementById('image-preview');
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                document.getElementById('placeholder-text').classList.add('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // FUNGSI KOMPRESI FOTO (BIKIN KILAT)
+    async function compressImage(file) {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    let width = img.width, height = img.height;
+                    if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    canvas.toBlob((blob) => {
+                        resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                    }, 'image/jpeg', 0.7);
+                };
+            };
+        });
+    }
+
+    async function sendData() {
+        const btn = document.getElementById('btn-kirim');
+        const fileInput = document.getElementById('camera-input').files[0] || document.getElementById('file-input').files[0];
+
+        if (!document.getElementById('petugas').value || !fileInput || !document.getElementById('kualitas').value) {
+            alert('Lengkapi semua data dan foto ya Pak!'); return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = "⏳ MENGECILKAN FOTO...";
+
+        try {
+            const compressedFile = await compressImage(fileInput);
+            btn.innerHTML = "⏳ MENGIRIM DATA...";
+
+            const formData = new FormData();
+            formData.append('image', compressedFile);
+            const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=da686e0dd69fe24a739317f961163f1e`, { method: 'POST', body: formData });
+            const imgData = await imgRes.json();
+            
+            // GANTI DENGAN URL APPS SCRIPT BAPAK
+            const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9fhd6D_U4xfq1jlB_U4ZeJADsP5qj_kkL2xUZOKxXKT4ZnSKqHGaJO8sbz_jYhZz7MA/exec'; 
+
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    data: [{
+                        'waktu': new Date().toLocaleString('id-ID'),
+                        'petugas': document.getElementById('petugas').value,
+                        'kegiatan': document.getElementById('kegiatan').value,
+                        'responden': document.getElementById('responden').value,
+                        'komoditas': document.getElementById('komoditas').value,
+                        'kualitas': document.getElementById('kualitas').value,
+                        'produsen': document.getElementById('produsen').value,
+                        'foto': imgData.data.url
+                    }]
+                })
+            });
+
+            alert("✅ BERHASIL! Data terkirim sangat cepat.");
+            location.reload();
+        } catch (e) { alert("Gagal: " + e.message); } finally { btn.disabled = false; btn.innerHTML = "🚀 Kirim Data"; }
+    }
+    </script>
+</body>
+</html>
