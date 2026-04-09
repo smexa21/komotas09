@@ -76,14 +76,13 @@
     </div>
 
     <script>
-        // GANTI INI DENGAN URL APPS SCRIPT BAPAK (Sama dengan yang di index.html)
-        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9fhd6D_U4xfq1jlB_U4ZeJADsP5qj_kkL2xUZOKxXKT4ZnSKqHGaJO8sbz_jYhZz7MA/exec';
+        // GANTI INI DENGAN URL APPS SCRIPT BAPAK
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyYvP832S_mU01PY7klohIuCGEXhMl8Ej_LWDcrVSilVAyM5-_Y-2PQeA9vSkjOISgE/exec';
 
         async function fetchData() {
             document.getElementById('loading-overlay').style.display = 'flex';
             try {
-                // Kita gunakan parameter ?action=read agar Apps Script tahu kita mau baca data
-                const response = await fetch(APPS_SCRIPT_URL + '?action=read');
+                const response = await fetch(APPS_SCRIPT_URL);
                 const result = await response.json();
                 
                 if (result.status === 'success') {
@@ -91,7 +90,7 @@
                 }
             } catch (error) {
                 console.error('Error:', error);
-                alert('Gagal mengambil data. Pastikan Apps Script sudah mendukung fungsi GET.');
+                alert('Gagal mengambil data. Pastikan Apps Script sudah di-Deploy ulang (New Version).');
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
@@ -101,16 +100,21 @@
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             
-            // Urutkan dari yang terbaru (paling bawah di sheets jadi paling atas)
+            // Urutkan data terbaru di atas
             const sortedData = data.reverse();
 
             sortedData.forEach(row => {
                 const tr = document.createElement('tr');
+                
+                // Perbaikan pembacaan kolom agar tidak undefined
+                // Kita gabungkan kolom 'komoditas' dan 'kualitas' dari Sheets
+                const infoKomoditas = `${row.komoditas || ''} - ${row.kualitas || ''}`;
+                
                 tr.innerHTML = `
-                    <td class="whitespace-nowrap">${row.waktu}</td>
-                    <td class="font-bold">${row.petugas}</td>
-                    <td>${row.responden}</td>
-                    <td class="text-blue-600 font-bold">${row.komoditas_kualitas}</td>
+                    <td class="whitespace-nowrap">${row.waktu || '-'}</td>
+                    <td class="font-bold">${row.petugas || '-'}</td>
+                    <td>${row.responden || '-'}</td>
+                    <td class="text-blue-600 font-bold">${infoKomoditas}</td>
                     <td>${row.produsen || '-'}</td>
                     <td>
                         <a href="${row.foto}" target="_blank" class="bg-blue-100 text-blue-600 px-2 py-1 rounded font-bold text-[9px] hover:bg-blue-200">LIHAT</a>
@@ -120,7 +124,9 @@
             });
 
             document.getElementById('stat-total').innerText = sortedData.length;
-            document.getElementById('stat-last').innerText = sortedData[0].waktu.split(',')[0];
+            if(sortedData.length > 0) {
+                document.getElementById('stat-last').innerText = sortedData[0].waktu;
+            }
         }
 
         function filterTable() {
@@ -141,7 +147,6 @@
             }
         }
 
-        // Jalankan saat load
         fetchData();
     </script>
 </body>
