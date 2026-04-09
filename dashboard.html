@@ -6,10 +6,10 @@
     <title>Dashboard Survei Harga - BPS Tabalong</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Gaya agar scroll tabel halus di HP */
         .table-container { overflow-x: auto; }
-        th { background-color: #0066b2; color: white; text-transform: uppercase; font-size: 10px; padding: 12px; }
-        td { font-size: 11px; padding: 10px; border-bottom: 1px solid #edf2f7; }
+        /* Header Rata Kiri sejajar dengan isi */
+        th { background-color: #0066b2; color: white; text-transform: uppercase; font-size: 9px; padding: 12px; text-align: left; }
+        td { font-size: 11px; padding: 10px; border-bottom: 1px solid #edf2f7; text-align: left; }
         tr:nth-child(even) { background-color: #f8fafc; }
         
         #loading-overlay {
@@ -23,11 +23,11 @@
 
     <div id="loading-overlay">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0066b2]"></div>
-        <p class="mt-4 font-bold text-[#0066b2]">Menarik Data dari Sheets...</p>
+        <p class="mt-4 font-bold text-[#0066b2]">Memuat Data...</p>
     </div>
 
     <div class="bg-[#0066b2] text-white p-4 shadow-lg border-b-4 border-[#ffc107] sticky top-0 z-50">
-        <div class="max-w-6xl mx-auto flex justify-between items-center">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
             <div class="flex items-center space-x-3">
                 <img src="https://www.bps.go.id/_next/image?url=%2Fassets%2Flogo-bps.png&w=1080&q=75" class="h-8">
                 <div>
@@ -39,7 +39,7 @@
         </div>
     </div>
 
-    <div class="max-w-6xl mx-auto p-4">
+    <div class="max-w-7xl mx-auto p-4">
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500">
                 <p class="text-[10px] text-gray-500 font-bold uppercase">Total Entri</p>
@@ -47,14 +47,13 @@
             </div>
             <div class="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-green-500">
                 <p class="text-[10px] text-gray-500 font-bold uppercase">Update Terakhir</p>
-                <h3 id="stat-last" class="text-xs font-bold text-gray-800 mt-2">-</h3>
+                <h3 id="stat-last" class="text-[10px] font-bold text-gray-800 mt-2">-</h3>
             </div>
         </div>
 
         <div class="bg-white rounded-3xl shadow-md overflow-hidden border border-gray-200">
             <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 class="font-black text-xs uppercase text-gray-600">Data Hasil Survei Terkini</h2>
-                <input type="text" id="search" onkeyup="filterTable()" placeholder="Cari Nama/Komoditas..." class="text-[10px] p-2 border rounded-lg outline-none focus:border-blue-500 w-1/2">
+                <input type="text" id="search" onkeyup="filterTable()" placeholder="Cari data petugas, responden, atau komoditas..." class="text-[10px] p-3 border rounded-xl outline-none focus:border-blue-500 w-full">
             </div>
             <div class="table-container">
                 <table class="w-full" id="data-table">
@@ -64,19 +63,18 @@
                             <th>Petugas</th>
                             <th>Responden</th>
                             <th>Komoditas</th>
+                            <th>Kualitas</th>
                             <th>Produsen</th>
                             <th>Foto</th>
                         </tr>
                     </thead>
-                    <tbody id="table-body">
-                        </tbody>
+                    <tbody id="table-body"></tbody>
                 </table>
             </div>
         </div>
     </div>
 
     <script>
-        // GANTI INI DENGAN URL APPS SCRIPT BAPAK
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9fhd6D_U4xfq1jlB_U4ZeJADsP5qj_kkL2xUZOKxXKT4ZnSKqHGaJO8sbz_jYhZz7MA/exec';
 
         async function fetchData() {
@@ -84,13 +82,11 @@
             try {
                 const response = await fetch(APPS_SCRIPT_URL);
                 const result = await response.json();
-                
                 if (result.status === 'success') {
                     renderTable(result.data);
                 }
             } catch (error) {
-                console.error('Error:', error);
-                alert('Gagal mengambil data. Pastikan Apps Script sudah di-Deploy ulang (New Version).');
+                alert('Gagal mengambil data dari Google Sheets.');
             } finally {
                 document.getElementById('loading-overlay').style.display = 'none';
             }
@@ -100,50 +96,36 @@
             const tbody = document.getElementById('table-body');
             tbody.innerHTML = '';
             
-            // Urutkan data terbaru di atas
-            const sortedData = data.reverse();
+            // Urutkan data terbaru di paling atas
+            const sortedData = [...data].reverse();
 
             sortedData.forEach(row => {
                 const tr = document.createElement('tr');
                 
-                // Perbaikan pembacaan kolom agar tidak undefined
-                // Kita gabungkan kolom 'komoditas' dan 'kualitas' dari Sheets
-                const infoKomoditas = `${row.komoditas || ''} - ${row.kualitas || ''}`;
-                
                 tr.innerHTML = `
                     <td class="whitespace-nowrap">${row.waktu || '-'}</td>
-                    <td class="font-bold">${row.petugas || '-'}</td>
+                    <td class="font-bold text-gray-700">${row.petugas || '-'}</td>
                     <td>${row.responden || '-'}</td>
-                    <td class="text-blue-600 font-bold">${infoKomoditas}</td>
+                    <td class="text-blue-700 font-bold">${row.komoditas || '-'}</td>
+                    <td class="text-gray-600 italic">${row.kualitas || '-'}</td>
                     <td>${row.produsen || '-'}</td>
                     <td>
-                        <a href="${row.foto}" target="_blank" class="bg-blue-100 text-blue-600 px-2 py-1 rounded font-bold text-[9px] hover:bg-blue-200">LIHAT</a>
+                        <a href="${row.foto}" target="_blank" class="bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg font-bold text-[10px] hover:bg-blue-600 hover:text-white transition-all">LIHAT</a>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
 
             document.getElementById('stat-total').innerText = sortedData.length;
-            if(sortedData.length > 0) {
-                document.getElementById('stat-last').innerText = sortedData[0].waktu;
-            }
+            if(sortedData.length > 0) document.getElementById('stat-last').innerText = sortedData[0].waktu;
         }
 
         function filterTable() {
             const input = document.getElementById("search");
             const filter = input.value.toUpperCase();
-            const table = document.getElementById("data-table");
-            const tr = table.getElementsByTagName("tr");
-
-            for (let i = 1; i < tr.length; i++) {
-                let found = false;
-                const tds = tr[i].getElementsByTagName("td");
-                for(let j = 0; j < tds.length; j++) {
-                    if (tds[j].textContent.toUpperCase().indexOf(filter) > -1) {
-                        found = true;
-                    }
-                }
-                tr[i].style.display = found ? "" : "none";
+            const tr = document.getElementById("table-body").getElementsByTagName("tr");
+            for (let i = 0; i < tr.length; i++) {
+                tr[i].style.display = tr[i].textContent.toUpperCase().includes(filter) ? "" : "none";
             }
         }
 
